@@ -3,6 +3,7 @@
 const flattenBrunchMap = require('flatten-brunch-map')
 const genPugSourceMap = require('gen-pug-source-map')
 const sysPath = require('path')
+const touch = require('touch')
 const pug = require('pug')
 
 //const PRECOMP = /\.static\.(?:jade|pug)$/
@@ -52,7 +53,8 @@ class PugCompiler {
         inlineRuntimeFunctions: false,
         compileDebug: !brunchConf.optimize,
         sourceMap: !!brunchConf.sourceMaps,
-        globals: []
+        globals: [],
+        partials: ""
       },
       brunchConf.plugins && brunchConf.plugins.pug
     )
@@ -86,6 +88,18 @@ class PugCompiler {
   compile (params) {
     const data = params.data
     const path = params.path
+    
+    // TODO: подумать может заменить на anymatch
+    const partialsPattern = new RegExp("^" + this.config.partials)
+    
+    if (partialsPattern.test(path)) {
+      return new Promise((resolve, reject) => {
+          this._updateAddicted(path)
+          
+          // if this file in partials directory, return nothing
+          resolve("")
+      });
+    }
 
     if (this.config.preCompile &&
       (!this.config.preCompilePattern || this.config.preCompilePattern.test(path))
@@ -96,7 +110,7 @@ class PugCompiler {
         this.config
       )
     }
-
+    
     return new Promise((resolve, reject) => {
 
       // cloning options is mandatory because Pug changes it
@@ -141,7 +155,6 @@ class PugCompiler {
   _precompile (data, path, config, asset) {
     const locals  = dup(config.locals)
     const options = cloneProps(config, PUGPROPS)
-
     // by no inlining functions, pug uses own `require('pug-runtime')`
     options.inlineRuntimeFunctions = false
 
@@ -198,7 +211,15 @@ class PugCompiler {
   _export (path, tmpl) {
     return path === null ? `module.exports = ${tmpl};\n` : `${tmpl};\nmodule.exports = template;\n`
   }
-
+  _updateAddicted(path) {
+    for (var  addicted in this._depcache) {
+      this._depcache[addicted].forEach((dep) => {
+        if (sysPath.relative(dep,path) === '') {
+          touch(addicted)
+        }
+      });
+    }
+  }
 }
 
 PugCompiler.prototype.brunchPlugin = true
