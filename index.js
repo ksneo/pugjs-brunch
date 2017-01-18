@@ -54,7 +54,7 @@ class PugCompiler {
         compileDebug: !brunchConf.optimize,
         sourceMap: !!brunchConf.sourceMaps,
         globals: [],
-        partials: ""
+        partials: ''
       },
       brunchConf.plugins && brunchConf.plugins.pug
     )
@@ -88,17 +88,20 @@ class PugCompiler {
   compile (params) {
     const data = params.data
     const path = params.path
-    
+
     // TODO: подумать может заменить на anymatch
-    const partialsPattern = new RegExp("^" + this.config.partials)
-    
+    const partialsPattern = new RegExp(`^${this.config.partials}`)
+
     if (partialsPattern.test(path)) {
       return new Promise((resolve, reject) => {
+        try {
           this._updateAddicted(path)
-          
           // if this file in partials directory, return nothing
-          resolve("")
-      });
+          resolve('')
+        } catch (_error) {
+          reject(_error)
+        }
+      })
     }
 
     if (this.config.preCompile &&
@@ -110,7 +113,7 @@ class PugCompiler {
         this.config
       )
     }
-    
+
     return new Promise((resolve, reject) => {
 
       // cloning options is mandatory because Pug changes it
@@ -211,13 +214,16 @@ class PugCompiler {
   _export (path, tmpl) {
     return path === null ? `module.exports = ${tmpl};\n` : `${tmpl};\nmodule.exports = template;\n`
   }
-  _updateAddicted(path) {
-    for (var  addicted in this._depcache) {
-      this._depcache[addicted].forEach((dep) => {
-        if (sysPath.relative(dep,path) === '') {
-          touch(addicted)
-        }
-      });
+
+  _updateAddicted (path) {
+    for (const addicted in this._depcache) {
+      if (this._depcache.hasOwnProperty(addicted)) {
+        this._depcache[addicted].forEach((dep) => {
+          if (sysPath.relative(dep, path) === '') {
+            touch(addicted)
+          }
+        })
+      }
     }
   }
 }
