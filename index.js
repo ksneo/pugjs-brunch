@@ -5,7 +5,7 @@ const genPugSourceMap = require('gen-pug-source-map')
 const sysPath = require('path')
 const touch = require('touch')
 const pug = require('pug')
-
+const anymatch = require('anymatch')
 //const PRECOMP = /\.static\.(?:jade|pug)$/
 
 // used pug options, note this list does not include 'name'
@@ -89,10 +89,9 @@ class PugCompiler {
     const data = params.data
     const path = params.path
 
-    // TODO: подумать может заменить на anymatch
-    const partialsPattern = new RegExp(`^${this.config.partials}`)
+    const partialsMatchers = this.config.partials
 
-    if (partialsPattern.test(path)) {
+    if (anymatch(partialsMatchers, path)) {
       return new Promise((resolve, reject) => {
         try {
           this._updateAddicted(path)
