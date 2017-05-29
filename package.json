@@ -1,6 +1,6 @@
 {
   "name": "pugjs-brunch",
-  "version": "2.8.6",
+  "version": "2.10.0",
   "description": "Adds Pug (aka Jade) support to brunch.",
   "author": "aMarCruz <amarcruzbox-git@yahoo.com>",
   "license": "MIT",
@@ -10,8 +10,8 @@
     "url": "https://github.com/aMarCruz/pugjs-brunch.git"
   },
   "engines": {
-    "node": ">=4.0",
-    "npm": ">=3.0"
+    "node": ">=4.2",
+    "npm": ">=2.14"
   },
   "keywords": [
     "brunch",
@@ -25,21 +25,22 @@
     "source map"
   ],
   "scripts": {
-    "test": "eslint index.js && npm run build && mocha test/index.js",
-    "build": "node build-rt.js",
-    "prepublish": "npm run build && npm test"
+    "test": "eslint index.js && mocha test/index.js",
+    "pretest": "node ./build-runtime.js",
+    "prepublish": "npm test",
+    "postinstall": "node ./build-runtime.js"
   },
   "dependencies": {
-    "flatten-brunch-map": "^2.8.1",
+    "flatten-brunch-map": "^2.8.2",
     "gen-pug-source-map": "^0.1.2",
-    "pug": "^2.0.0-beta6",
+    "pug": "^2.0.0-beta11",
+    "pug-runtime": "^2.0.3",
+    "anymatch": "^1.3.0",
     "touch": "^1.0.0",
-    "anymatch": "^1.3.0"
   },
   "devDependencies": {
-    "eslint": "^3.12.2",
+    "eslint": "^3.16.0",
     "expect": "^1.20.2",
-    "mocha": "^3.2.0",
-    "pug-runtime": "^2.0.2"
+    "mocha": "^3.2.0"
   }
 }
